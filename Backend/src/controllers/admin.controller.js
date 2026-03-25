@@ -21,7 +21,7 @@ const approveUser = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"User id is required")
     }
     const user = await pool.query(
-        "UPDATE users SET status='' WHERE id=$1"[userId]
+        "UPDATE users SET status='' WHERE id=$1",[userId]
     )
     if(!user){
         throw new ApiError(404,"User not found")

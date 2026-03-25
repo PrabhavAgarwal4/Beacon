@@ -53,7 +53,7 @@ const loginUser = asyncHandler(async(req,res)=>{
     }
 
     const result = await pool.query(
-        'SELECT * FROM users WHERE email=$1'[email]
+        'SELECT * FROM users WHERE email=$1',[email]
     )
     
     const user = result.rows[0]
@@ -77,7 +77,7 @@ const loginUser = asyncHandler(async(req,res)=>{
 
     //add refresh token in user 
     await pool.query(
-        "UPDATE users SET refresh_token=$1 WHERE id=$2"[refreshToken,user.id]
+        "UPDATE users SET refresh_token=$1 WHERE id=$2",[refreshToken,user.id]
     )
 
     return res
