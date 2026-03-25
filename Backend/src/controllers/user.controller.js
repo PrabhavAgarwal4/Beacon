@@ -24,9 +24,17 @@ const registerUser = asyncHandler(async(req,res)=>{
     if(password.length < 7){
         throw new ApiError(400,"Length of password must be atleast 7")
     }
+     
+    //check for duplicate email user
+    const existingUser = await pool.query(
+        "SELECT * FROM users WHERE email=$1",[email]
+    )
+    if (existingUser.rows.length > 0){
+        throw new ApiError(400, "User already exists");
+    }
 
     const password_hash = await bcrypt.hash(password,10) //hash password
-
+    
     const result = await pool.query(
         `INSERT INTO users (name, email, password_hash, role, status)
         VALUES ($1,$2,$3,$4,'PENDING') RETURNING id,name,email,role,status`,
@@ -45,7 +53,6 @@ const registerUser = asyncHandler(async(req,res)=>{
 })
 
 const loginUser = asyncHandler(async(req,res)=>{
-    //user already veerified whether approved or not using verifyJWT
     const {email,password} = req.body
 
     if(!email?.trim() || !password?.trim()){
@@ -82,13 +89,21 @@ const loginUser = asyncHandler(async(req,res)=>{
 
     return res
     .status(200)
+    .cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: true,
+    })
+    .cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    })
     .json(
-        new ApiResponse(200,{accessToken,refreshToken},"Logged in successfully")
+        new ApiResponse(200,{},"Logged in successfully")
     )
 })
 
 const getUser = asyncHandler(async (req, res) => {
-  const {userId} = req.body
+  const userId = req.user.id
 
   if(!userId){
     throw new ApiError(400,"User not found")
@@ -128,8 +143,12 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
     
     return res
     .status(200)
+    .cookie("accessToken",newAccessToken,{
+     httpOnly: true,
+     secure: true,
+    })
     .json(
-        new ApiResponse(200,{accessToken:newAccessToken},"Access token refreshed")
+        new ApiResponse(200,{},"Access token refreshed")
     )
 })
 

@@ -16,7 +16,8 @@ const getPendingUsers = asyncHandler(async(req,res)=>{
 })
 
 const approveUser = asyncHandler(async(req,res)=>{
-    const {userId} = req.body
+    const userId = req.user.id
+
     if(!userId){
         throw new ApiError(400,"User id is required")
     }
