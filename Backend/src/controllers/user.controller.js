@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js"
 import pool from "../config/postgres.js"
 import bcrypt from "bcrypt"
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import jwt from "jsonwebtoken"
 
 
 
@@ -101,4 +102,36 @@ const getUser = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, result.rows[0], "User fetched"));
 });
 
-export {registerUser,loginUser,getUser}
+const refreshAccessToken = asyncHandler(async(req,res)=>{
+    const {refreshToken} = req.body
+
+    if(!refreshToken){
+        throw new ApiError(400,"Refresh token not found")
+    }
+
+    const decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET
+    )
+     
+    const result = await pool.query(
+        "SELECT * FROM users WHERE id=$1",[decoded.id]
+    )
+
+    const user = result.rows[0]
+    
+    if(user.refresh_token !== refreshToken){
+        throw new ApiError(404,"Invalid refresh token")
+    }
+
+    const newAccessToken = generateAccessToken(user);
+    
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,{accessToken:newAccessToken},"Access token refreshed")
+    )
+})
+
+
+export {registerUser,loginUser,getUser,refreshAccessToken}
