@@ -21,7 +21,7 @@ const createJob = asyncHandler(async(req,res)=>{
    }
 
    const job = await pool.query(
-    "INSERT INTO jobs (recruiter_id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",[user.id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline]
+    "INSERT INTO jobs (recruiter_id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *",[user.id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline]
    )
    
    if(job.rowCount === 0){
@@ -78,14 +78,16 @@ const toggleJobStatus = asyncHandler(async(req,res)=>{
     }
 
     //access check 
-    let {recruiterId,jobStatus} = await pool.query(
+    const result = await pool.query(
         "SELECT recruiter_id,status FROM jobs WHERE id=$1",[jobId]
     )
-    if(!recruiterId){
+    if(result.rows.length === 0){
         throw new ApiError(404,"Job not found")
     }
+    const recruiterId = result.rows[0].recruiter_id
+    let jobStatus = result.rows[0].status
     if(recruiterId !== user.id){
-        throw new ApiError("Invalid request/access")
+        throw new ApiError(403,"Invalid request/access")
     }
 
     //now toggle job status
@@ -93,7 +95,7 @@ const toggleJobStatus = asyncHandler(async(req,res)=>{
     else jobStatus = "OPEN"
 
     const job = await pool.query(
-        "UPDATE jobs SET status=$1 WHERE id=$2",[jobStatus,jobId]
+        "UPDATE jobs SET status=$1 WHERE id=$2 RETURNING *",[jobStatus,jobId]
     )
     if(job.rows.length === 0){
         throw new ApiError(404,"Job status updation failed")
