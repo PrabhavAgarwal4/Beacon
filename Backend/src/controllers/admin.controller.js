@@ -1,7 +1,7 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { ApiError } from "../utils/ApiError.js"
-import { pool } from "../config/postgres.js"
+import  pool  from "../config/postgres.js"
 
 
 const getPendingUsers = asyncHandler(async(req,res)=>{

@@ -1,6 +1,6 @@
 import {Router} from "express"
-import { approveUser, getPendingUsers } from "../controllers/admin.controller"
-import { isAdmin, verifyJWT } from "../middlewares/auth.middleware"
+import { approveUser, getPendingUsers } from "../controllers/admin.controller.js"
+import { isAdmin, verifyJWT } from "../middlewares/auth.middleware.js"
 
 const router = Router()
 
