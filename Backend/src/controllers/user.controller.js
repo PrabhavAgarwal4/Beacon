@@ -92,10 +92,12 @@ const loginUser = asyncHandler(async(req,res)=>{
     .cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: true,
+    sameSite: "strict"
     })
     .cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
+    sameSite: "strict"
     })
     .json(
         new ApiResponse(200,{},"Logged in successfully")
@@ -118,7 +120,7 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async(req,res)=>{
-    const {refreshToken} = req.body
+    const refreshToken = req.cookies?.refreshToken || req.body.refreshToken
 
     if(!refreshToken){
         throw new ApiError(400,"Refresh token not found")
@@ -146,6 +148,7 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
     .cookie("accessToken",newAccessToken,{
      httpOnly: true,
      secure: true,
+     sameSite: "strict"
     })
     .json(
         new ApiResponse(200,{},"Access token refreshed")
