@@ -37,7 +37,7 @@ const createJob = asyncHandler(async(req,res)=>{
 
 const getAllJobs = asyncHandler(async(req,res)=>{
    const jobs = await pool.query(
-    "SELECT * FROM jobs ORDER BY created_at DESC"
+    "SELECT * FROM jobs WHERE is_active = true AND status = 'OPEN' ORDER BY created_at DESC"
    );
 
   return res.json(
@@ -76,7 +76,9 @@ const toggleJobStatus = asyncHandler(async(req,res)=>{
     if(!jobId){
         throw new ApiError(400,"Job id is required")
     }
-
+    if(user.role !== "RECRUITER"){
+        throw new ApiError(403,"Only Recruiter allowed")
+    }
     //access check 
     const result = await pool.query(
         "SELECT recruiter_id,status FROM jobs WHERE id=$1",[jobId]
@@ -91,8 +93,7 @@ const toggleJobStatus = asyncHandler(async(req,res)=>{
     }
 
     //now toggle job status
-    if(jobStatus==="OPEN") jobStatus = "CLOSE"
-    else jobStatus = "OPEN"
+    jobStatus = jobStatus === "OPEN" ? "CLOSED" : "OPEN";
 
     const job = await pool.query(
         "UPDATE jobs SET status=$1 WHERE id=$2 RETURNING *",[jobStatus,jobId]
