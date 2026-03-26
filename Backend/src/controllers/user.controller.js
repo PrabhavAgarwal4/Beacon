@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         [name, email, password_hash, role]
     )
     
-    if(!result){
+    if(result.rowCount === 0){
         throw new ApiError(400,"User registration unsuccessfull")
     }
 
