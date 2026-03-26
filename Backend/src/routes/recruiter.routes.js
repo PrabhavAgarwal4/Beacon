@@ -7,6 +7,6 @@ const router = Router()
 router.use(verifyJWT)
 
 router.route("/setProfile").post(setRecruiterProfile)
-router.route("/getProfile").get(getRecruiterProfile)
+router.route("/getProfile/:targetId").get(getRecruiterProfile)
 
 export default router
