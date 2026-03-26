@@ -34,4 +34,37 @@ const approveUser = asyncHandler(async(req,res)=>{
     )
 })
 
-export {getPendingUsers,approveUser}
+const getPendingJobs = asyncHandler(async(req,res)=>{
+    const jobs = await pool.query(
+        "SELECT * FROM jobs WHERE is_active=false"
+    )
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,jobs.rows,"All pending jobs fetched")
+    )
+})
+
+const approveJob = asyncHandler(async(req,res)=>{
+   const {jobId} = req.params
+   
+   if(!jobId){
+    throw new ApiError(400,"Job id is required")
+   }
+
+   const job = await pool.query(
+    "UPDATE jobs SET is_active=true WHERE id=$1",[jobId]
+   )
+
+   if(job.rows.length === 0){
+    throw new ApiError(404,"Job not found")
+   }
+
+   return res
+   .status(200)
+   .json(
+    new ApiResponse(200,{approved:true},"Job approved by Admin")
+   )
+})
+
+export {getPendingUsers,approveUser,getPendingJobs,approveJob}
