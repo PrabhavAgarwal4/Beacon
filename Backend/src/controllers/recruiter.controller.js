@@ -7,6 +7,8 @@ const setRecruiterProfile = asyncHandler(async(req,res)=>{
    const userId = req.user.id
    const {company_name,company_website,company_description,designation,phone} = req.body
 
+
+   
    if(!company_description?.trim() || !company_website?.trim() || !company_name?.trim() || !designation?.trim() || !phone?.trim()){
       throw new ApiError(400,"All fields are required")
    }
@@ -14,8 +16,8 @@ const setRecruiterProfile = asyncHandler(async(req,res)=>{
    const recruiter = await pool.query(
     "INSERT INTO recruiter_details (user_id,company_name,company_website,company_description,designation,phone) VALUES ($1,$2,$3,$4,$5) RETURNING id,company_name,company_website,company_description,designation,phone",[userId,company_name,company_website,company_description,designation,phone]
    )
-   if(!recruiter){
-    throw new ApiError(400,"Recruiter details not saved")
+   if (recruiter.rowCount === 0) {
+      throw new ApiError(400, "Recruiter details not saved");
    }
 
    return res
@@ -31,13 +33,14 @@ const getRecruiterProfile = asyncHandler(async(req,res)=>{
     "SELECT company_name,company_website,company_description,designation,phone FROM recruiter_details WHERE user_id=$1",[userId]
    )
 
-   if(!recruiter){
+   if(!recruiter.rows.length === 0){
     throw new ApiError(404,"Recruiter not found")
    }
+
    return res
    .status(200)
    .json(
-    new ApiResponse(200,{recruiter},"Recruiter details fetched")
+    new ApiResponse(200,recruiter.rows[0],"Recruiter details fetched")
    )
 })
 

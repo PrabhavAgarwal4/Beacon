@@ -15,7 +15,7 @@ const setStudentProfile = asyncHandler(async(req,res)=>{
         "INSERT INTO student_details (user_id,rollno,department,course,graduation_year,cgpa,phone) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id,rollno,department,course,graduation_year,cgpa",[userId,rollno,department,course,graduation_year,cgpa,phone]
    )
 
-   if(!student){
+   if(student.rowCount === 0){
       throw new ApiError(400,"Student details failed to save")
    }
 
@@ -34,14 +34,14 @@ const getStudentProfile = asyncHandler(async(req,res)=>{
     'SELECT rollno,department,course,graduation_year,cgpa,phone FROM student_details WHERE user_id=$1',[userId]
    )
 
-   if(!student){
+   if(student.rows.length === 0){
     throw new ApiError(404,"Student not found")
    }
 
    return res
    .status(200)
    .json(
-    new ApiResponse(200,{student},"Student details fetched")
+    new ApiResponse(200,student.rows[0],"Student details fetched")
    )
 })
 
