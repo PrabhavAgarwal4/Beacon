@@ -36,11 +36,36 @@ const createJob = asyncHandler(async(req,res)=>{
 })
 
 const getAllJobs = asyncHandler(async(req,res)=>{
+   const jobs = await pool.query(
+    "SELECT * FROM jobs ORDER BY created_at DESC"
+   );
+
+  return res.json(
+    new ApiResponse(200, jobs.rows, "All Jobs fetched")
+  );
 
 })
 
 const getJobById = asyncHandler(async(req,res)=>{
+   const {jobId} = req.params
 
+   if(!jobId){
+    throw new ApiError(400,"Job id is required")
+   }
+
+   const job = await pool.query(
+    "SELECT * FROM jobs WHERE id=$1",[jobId]
+   )
+   
+   if(job.rows.length === 0){
+    throw new ApiError(404,"Job not found")
+   }
+
+   return res
+   .status(200)
+   .json(
+    new ApiResponse(200,job.rows[0],"Job fetched")
+   )
 })
 
 export {createJob,getAllJobs,getJobById}
