@@ -21,7 +21,7 @@ const createJob = asyncHandler(async(req,res)=>{
    }
 
    const job = await pool.query(
-    "INSERT INTO jobs (recruiter_id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",[user.id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline,"CLOSE"]
+    "INSERT INTO jobs (recruiter_id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",[user.id,title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline]
    )
    
    if(job.rowCount === 0){
@@ -31,7 +31,7 @@ const createJob = asyncHandler(async(req,res)=>{
     return res
     .status(201)
     .json(
-        new ApiResponse(201,job.rows[0],"Job created")
+        new ApiResponse(201,job.rows[0],"Job created,waiting for admin approval")
     )
 })
 
@@ -68,4 +68,42 @@ const getJobById = asyncHandler(async(req,res)=>{
    )
 })
 
-export {createJob,getAllJobs,getJobById}
+const toggleJobStatus = asyncHandler(async(req,res)=>{
+    //can only be toggled by same recruiter 
+    const user = req.user
+    const {jobId} = req.params
+
+    if(!jobId){
+        throw new ApiError(400,"Job id is required")
+    }
+
+    //access check 
+    let {recruiterId,jobStatus} = await pool.query(
+        "SELECT recruiter_id,status FROM jobs WHERE id=$1",[jobId]
+    )
+    if(!recruiterId){
+        throw new ApiError(404,"Job not found")
+    }
+    if(recruiterId !== user.id){
+        throw new ApiError("Invalid request/access")
+    }
+
+    //now toggle job status
+    if(jobStatus==="OPEN") jobStatus = "CLOSE"
+    else jobStatus = "OPEN"
+
+    const job = await pool.query(
+        "UPDATE jobs SET status=$1 WHERE id=$2",[jobStatus,jobId]
+    )
+    if(job.rows.length === 0){
+        throw new ApiError(404,"Job status updation failed")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,"Job status toggled")
+    )
+})
+
+export {createJob,getAllJobs,getJobById,toggleJobStatus}
