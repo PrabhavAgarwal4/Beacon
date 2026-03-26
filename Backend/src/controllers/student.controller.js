@@ -12,6 +12,15 @@ const setStudentProfile = asyncHandler(async(req,res)=>{
       throw new ApiError(403,"Invalid access! Only students are allowed")
    }
 
+   //duplicate check 
+   const existingStudent = await pool.query(
+    "SELECT * FROM student_details WHERE user_id=$1",[userId]
+   )
+   if(existingStudent.rows.length !== 0){
+      throw new ApiError(400,"Student already exists")
+   }
+
+
    if(!rollno || !department?.trim() || !course?.trim() || !phone?.trim() || !graduation_year || !cgpa){
       throw new ApiError(400,"All fields are required")
    }
@@ -35,6 +44,14 @@ const setStudentProfile = asyncHandler(async(req,res)=>{
 const getStudentProfile = asyncHandler(async(req,res)=>{
    
    const {targetId} = req.params
+   if (!targetId) {
+      throw new ApiError(400, "Target ID is required");
+   }
+   
+   //student can only view its own profile
+   if (req.user.role === "STUDENT" && req.user.id != targetId) {
+      throw new ApiError(403, "You can only view your own profile");
+   }
 
    const student = await pool.query(
     'SELECT rollno,department,course,graduation_year,cgpa,phone FROM student_details WHERE user_id=$1',[targetId]
