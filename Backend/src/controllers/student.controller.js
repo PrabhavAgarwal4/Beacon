@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import pool from "../config/postgres";
 
-const setProfile = asyncHandler(async(req,res)=>{
+const setStudentProfile = asyncHandler(async(req,res)=>{
    const userId = req.user.id 
    const {rollno,department,course,graduation_year,cgpa,phone} = req.body
 
@@ -27,7 +27,7 @@ const setProfile = asyncHandler(async(req,res)=>{
 })
 
 
-const getProfile = asyncHandler(async(req,res)=>{
+const getStudentProfile = asyncHandler(async(req,res)=>{
    const userId = req.user.id
  
    const student = await pool.query(
@@ -46,4 +46,4 @@ const getProfile = asyncHandler(async(req,res)=>{
 })
 
 
-export {setProfile,getProfile}
+export {setStudentProfile,getStudentProfile}
