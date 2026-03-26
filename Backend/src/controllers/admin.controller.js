@@ -16,13 +16,13 @@ const getPendingUsers = asyncHandler(async(req,res)=>{
 })
 
 const approveUser = asyncHandler(async(req,res)=>{
-    const userId = req.user.id
+    const userId = req.body.userId
 
     if(!userId){
         throw new ApiError(400,"User id is required")
     }
     const user = await pool.query(
-        "UPDATE users SET status='' WHERE id=$1",[userId]
+        "UPDATE users SET status='APPROVED',is_active=true WHERE id=$1",[userId]
     )
     if(!user){
         throw new ApiError(404,"User not found")
