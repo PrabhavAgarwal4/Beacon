@@ -7,8 +7,11 @@ const setRecruiterProfile = asyncHandler(async(req,res)=>{
    const userId = req.user.id
    const {company_name,company_website,company_description,designation,phone} = req.body
 
+   //role check 
+   if(req.user.role !== "RECRUITER"){
+      throw new ApiError(403,"Invalid access! Only recruiters are allowed")
+   }
 
-   
    if(!company_description?.trim() || !company_website?.trim() || !company_name?.trim() || !designation?.trim() || !phone?.trim()){
       throw new ApiError(400,"All fields are required")
    }
@@ -27,10 +30,16 @@ const setRecruiterProfile = asyncHandler(async(req,res)=>{
    )
 })
 const getRecruiterProfile = asyncHandler(async(req,res)=>{
-   const userId = req.user.id
+   
+   const {targetId} = req.params
+
+   //role check
+   if(req.user.role === "STUDENT"){
+    throw new ApiError(403,"Students are not allowed to view recruiter profile")
+   }
 
    const recruiter = await pool.query(
-    "SELECT company_name,company_website,company_description,designation,phone FROM recruiter_details WHERE user_id=$1",[userId]
+    "SELECT company_name,company_website,company_description,designation,phone FROM recruiter_details WHERE user_id=$1",[targetId]
    )
 
    if(!recruiter.rows.length === 0){

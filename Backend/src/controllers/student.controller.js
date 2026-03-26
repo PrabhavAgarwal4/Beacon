@@ -6,6 +6,11 @@ import pool from "../config/postgres";
 const setStudentProfile = asyncHandler(async(req,res)=>{
    const userId = req.user.id 
    const {rollno,department,course,graduation_year,cgpa,phone} = req.body
+   
+   //roll check 
+   if(req.user.role !== "STUDENT"){
+      throw new ApiError(403,"Invalid access! Only students are allowed")
+   }
 
    if(!rollno || !department?.trim() || !course?.trim() || !phone?.trim() || !graduation_year || !cgpa){
       throw new ApiError(400,"All fields are required")
@@ -28,10 +33,11 @@ const setStudentProfile = asyncHandler(async(req,res)=>{
 
 
 const getStudentProfile = asyncHandler(async(req,res)=>{
-   const userId = req.user.id
- 
+   
+   const {targetId} = req.params
+
    const student = await pool.query(
-    'SELECT rollno,department,course,graduation_year,cgpa,phone FROM student_details WHERE user_id=$1',[userId]
+    'SELECT rollno,department,course,graduation_year,cgpa,phone FROM student_details WHERE user_id=$1',[targetId]
    )
 
    if(student.rows.length === 0){
