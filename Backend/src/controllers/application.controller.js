@@ -97,7 +97,9 @@ const getMyApplications = asyncHandler(async(req,res)=>{
 })
 
 const updateApplicationStatus = asyncHandler(async(req,res)=>{
-    const {applicationId,status} = req.params
+    const {applicationId} = req.params
+    const {status} = req.body
+
     if(!applicationId){
         throw new ApiError(400,"Application id is not given")
     }
@@ -106,18 +108,32 @@ const updateApplicationStatus = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Only recruiters are allowed")
     }
 
+    const validStatus = ["SHORTLISTED", "REJECTED"];
+    if (!validStatus.includes(status)) {
+       throw new ApiError(400, "Invalid status");
+    }
+
     const application = await pool.query(
-        "UPDATE applications SET status=$1 WHERE id=$2 RETURNING *",[status,applicationId]
+        `SELECT a.*, j.recruiter_id
+         FROM applications a
+         JOIN jobs j ON a.job_id = j.id
+         WHERE a.id=$1`,[applicationId]
     )
-    
-    if(application.rowCount === 0){
+    if(application.rows.length === 0){
         throw new ApiError(404,"Application not found")
     }
-     
+    if(application.rows[0].recruiter_id !== user.id){
+        throw new ApiError(403,"Not authorized")
+    }
+
+    const updated = await pool.query(
+    "UPDATE applications SET status=$1 WHERE id=$2 RETURNING *",[status, applicationId]
+    )
+
     return res
     .status(200)
     .json(
-        new ApiResponse(200,{updated:true},"Application status updated")
+        new ApiResponse(200,updated.rows[0],"Application status updated")
     )
 })
 
