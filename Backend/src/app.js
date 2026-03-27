@@ -26,11 +26,15 @@ import adminRouter from "./routes/admin.routes.js"
 import studentRouter from "./routes/student.routes.js"
 import recruiterRouter from "./routes/recruiter.routes.js"
 import jobRouter from "./routes/jobes.routes.js"
+import applicationRouter from "./routes/application.routes.js"
+
 
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/admin",adminRouter)
 app.use("/api/v1/student",studentRouter)
 app.use("/api/v1/recruiter",recruiterRouter)
 app.use("/api/v1/job",jobRouter)
+app.use("/api/v1/application",applicationRouter)
+
 
 export {app}
