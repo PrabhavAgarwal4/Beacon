@@ -8,7 +8,7 @@ cloudinary.config({
 });
 
 // upload function
-export const uploadFile = async (fileBuffer) => {
+const uploadFile = async (fileBuffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { resource_type: "raw" },
@@ -22,8 +22,16 @@ export const uploadFile = async (fileBuffer) => {
 };
 
 // delete function
-export const deleteFile = async (publicId) => {
+const deleteFile = async (publicId) => {
   return cloudinary.uploader.destroy(publicId, {
     resource_type: "raw",
   });
 };
+
+const getPublicId = (url)=>{
+    const parts = url.split("/")
+    const filename = parts[parts.length-1]
+    return filename.split(".")[0]
+}
+
+export {getPublicId,deleteFile,uploadFile}
