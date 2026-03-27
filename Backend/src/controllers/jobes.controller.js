@@ -68,10 +68,20 @@ const getAllJobs = asyncHandler(async(req,res)=>{
 
     const jobs = await pool.query(query,values)
 
+    const countQuery = `SELECT COUNT(*) FROM jobs WHERE is_active=true AND status="OPEN"`
+
+    const totalResult = await pool.query(countQuery)
+    const totalJobs = parseInt(totalResult.rows[0].count)
+
     return res
     .status(200)
     .json(
-        new ApiResponse(200,jobs.rows,"Jobs fetched")
+        new ApiResponse(200,{
+          jobs:jobs.rows,
+          total:totalJobs,
+          page,
+          totalPages:Math.ceil(totalJobs/limit)
+        },"Jobs fetched")
     )
 })
 
