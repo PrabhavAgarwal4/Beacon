@@ -12,22 +12,36 @@ const applyToJob = asyncHandler(async(req,res)=>{
    }
 
    if(user.role !== "STUDENT"){
-        throw new ApiError(400,"Only students are allowed")
+        throw new ApiError(403,"Only students can apply")
+    }
+   
+    const job = await pool.query(
+        "SELECT * FROM jobs WHERE id=$1",[jobId]
+    )
+    if(job.rows.length === 0){
+        throw new ApiError(404,"Job not found")
+    }
+    const jobData = job.rows[0]
+
+    if(!jobData.is_active || jobData.status!=="OPEN"){
+      throw new ApiError(400,"Job not open for applications")
     }
 
-   const application = await pool.query(
-    "INSERT INTO applications (job_id,student_user_id) VALUES ($1,$2) RETURNING *",[jobId,user.id]
-   )
-   
-   if(application.rowCount === 0){
-    throw new ApiError(400,"Application failed")
+   try {
+    const application = await pool.query(
+     "INSERT INTO applications (job_id,student_user_id) VALUES ($1,$2) RETURNING *",[jobId,user.id]
+    )
+    
+    return res
+    .status(201)
+    .json(
+        new ApiResponse(201,application.rows[0],"Applied successfully")
+    )
+   } catch (error) {
+      if(error.code = "23505"){
+        throw new ApiError(400,"Already applied")
+      }
    }
-   
-   return res
-   .status(201)
-   .json(
-       new ApiResponse(201,{applied:true},"Application successfull")
-   )
 })
 
 const getApplicantsForJob = asyncHandler(async(req,res)=>{
