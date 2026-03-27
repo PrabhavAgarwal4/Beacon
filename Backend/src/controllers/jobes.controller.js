@@ -35,54 +35,57 @@ const createJob = asyncHandler(async(req,res)=>{
 })
 
 const getAllJobs = asyncHandler(async(req,res)=>{
-   
-    const {page=1,limit=10,location,job_type,min_cgpa} = req.query
 
-    page = parseInt(page)
-    limit = parseInt(limit)
+  let { page = 1, limit = 10, location, job_type, min_cgpa } = req.query;
 
-    const offset = (page-1)*limit
+  page = parseInt(page);
+  limit = parseInt(limit);
+  const offset = (page - 1) * limit;
 
-    //dynamic query building
-    let query = `SELECT * FROM jobs WHERE is_active=true AND stats='OPEN`
-    const values = [] 
-    let index = 1
-    
-    //Filters
-    if(location){
-        query+= `AND location ILIKE $${index++}`
-        values.push(`%${location}%`)
-    }
-    if(job_type){
-        query+= `AND job_type = $${index++}`
-        values.push(job_type)
-    }
-    if(min_cgpa){
-        query+= `AND minimum_cgpa = $${index++}`
-        values.push(min_cgpa)
-    }
+  // 1. Base query and filter parts
+  let queryBase = ` FROM jobs WHERE is_active=true AND status='OPEN'`;
+  let filterQuery = "";
+  let values = [];
+  let index = 1;
 
-    //Pagination
-    query+= `ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index++}`
-    values.push(limit,offset)
+  // Dynamic Filter Building (Notice the leading spaces!)
+  if (location) {
+    filterQuery += ` AND location ILIKE $${index++}`;
+    values.push(`%${location}%`);
+  }
+  if (job_type) {
+    filterQuery += ` AND job_type = $${index++}`;
+    values.push(job_type);
+  }
+  if (min_cgpa) {
+    filterQuery += ` AND minimum_cgpa <= $${index++}`; // Changed to <= or >= depending on logic
+    values.push(parseFloat(min_cgpa));
+  }
 
-    const jobs = await pool.query(query,values)
+  // 2. Get Filtered Count (Crucial for correct pagination)
+  const countResult = await pool.query(`SELECT COUNT(*)` + queryBase + filterQuery, values);
+  const totalJobs = parseInt(countResult.rows[0].count);
 
-    const countQuery = `SELECT COUNT(*) FROM jobs WHERE is_active=true AND status="OPEN"`
+  // 3. Get Data with Pagination
+  let dataQuery = `SELECT *` + queryBase + filterQuery;
+  dataQuery += ` ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index++}`;
+  
+  // Spread existing values and add limit/offset
+  const dataValues = [...values, limit, offset];
 
-    const totalResult = await pool.query(countQuery)
-    const totalJobs = parseInt(totalResult.rows[0].count)
+  const jobs = await pool.query(dataQuery, dataValues);
 
-    return res
-    .status(200)
-    .json(
-        new ApiResponse(200,{
-          jobs:jobs.rows,
-          total:totalJobs,
-          page,
-          totalPages:Math.ceil(totalJobs/limit)
-        },"Jobs fetched")
-    )
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        jobs: jobs.rows,
+        totalJobs: totalJobs,
+        page,
+        totalPages: Math.ceil(totalJobs / limit),
+      },
+      "Jobs fetched"
+    ))
 })
 
 const getJobById = asyncHandler(async(req,res)=>{

@@ -1,8 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import bcrypt from "bcrypt";
-import { pool } from "../src/config/postgres.js";
+import  pool  from "../src/config/postgres.js";
 
 const createAdmin = async () => {
   try{
