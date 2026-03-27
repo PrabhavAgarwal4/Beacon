@@ -34,21 +34,43 @@ const createJob = asyncHandler(async(req,res)=>{
     )
 })
 
-const getAllJobs = asyncHandler(async(req,res)=>{
-
-  let { page = 1, limit = 10, location, job_type, min_cgpa } = req.query;
+const getAllJobs = asyncHandler(async (req, res) => {
+  // Added search, sortBy, and order to destructuring
+  let { 
+    page = 1, 
+    limit = 10, 
+    location, 
+    job_type, 
+    min_cgpa, 
+    search, 
+    sortBy = 'created_at', 
+    order = 'DESC' 
+  } = req.query;
 
   page = parseInt(page);
   limit = parseInt(limit);
   const offset = (page - 1) * limit;
 
-  // 1. Base query and filter parts
+  // Validate 'order' to prevent SQL injection
+  const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+  
+  // Whitelist allowed sortBy columns to prevent SQL injection
+  const allowedSortColumns = ['created_at', 'stipend_or_ctc', 'title', 'minimum_cgpa'];
+  const sortColumn = allowedSortColumns.includes(sortBy) ? sortBy : 'created_at';
+
   let queryBase = ` FROM jobs WHERE is_active=true AND status='OPEN'`;
   let filterQuery = "";
   let values = [];
   let index = 1;
 
-  // Dynamic Filter Building (Notice the leading spaces!)
+  // 1. Global Search (Title or Skills)
+  if (search) {
+    filterQuery += ` AND (title ILIKE $${index} OR skills_required ILIKE $${index})`;
+    values.push(`%${search}%`);
+    index++;
+  }
+
+  // 2. Existing Filters
   if (location) {
     filterQuery += ` AND location ILIKE $${index++}`;
     values.push(`%${location}%`);
@@ -58,19 +80,19 @@ const getAllJobs = asyncHandler(async(req,res)=>{
     values.push(job_type);
   }
   if (min_cgpa) {
-    filterQuery += ` AND minimum_cgpa <= $${index++}`; // Changed to <= or >= depending on logic
+    filterQuery += ` AND minimum_cgpa <= $${index++}`;
     values.push(parseFloat(min_cgpa));
   }
 
-  // 2. Get Filtered Count (Crucial for correct pagination)
+  // 3. Get Filtered Count
   const countResult = await pool.query(`SELECT COUNT(*)` + queryBase + filterQuery, values);
   const totalJobs = parseInt(countResult.rows[0].count);
 
-  // 3. Get Data with Pagination
+  // 4. Build Data Query with dynamic ORDER BY
+  // Note: We don't use $ placeholders for Column Names or ASC/DESC keywords in SQL
   let dataQuery = `SELECT *` + queryBase + filterQuery;
-  dataQuery += ` ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index++}`;
+  dataQuery += ` ORDER BY ${sortColumn} ${sortOrder} LIMIT $${index++} OFFSET $${index++}`;
   
-  // Spread existing values and add limit/offset
   const dataValues = [...values, limit, offset];
 
   const jobs = await pool.query(dataQuery, dataValues);
@@ -80,13 +102,14 @@ const getAllJobs = asyncHandler(async(req,res)=>{
       200,
       {
         jobs: jobs.rows,
-        totalJobs: totalJobs,
+        totalJobs,
         page,
         totalPages: Math.ceil(totalJobs / limit),
       },
-      "Jobs fetched"
-    ))
-})
+      "Jobs fetched successfully"
+    )
+  );
+});
 
 const getJobById = asyncHandler(async(req,res)=>{
    const {jobId} = req.params
