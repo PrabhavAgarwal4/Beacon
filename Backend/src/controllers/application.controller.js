@@ -68,7 +68,7 @@ const getApplicantsForJob = asyncHandler(async(req,res)=>{
     }
 
     const applicants = await pool.query(
-        "SELECT a.id, a.status, u.name, u.email FROM applications a JOIN users u ON a.student_id = u.id WHERE a.job_id=$1",[jobId]
+        "SELECT a.id, a.status, u.name, u.email FROM applications a JOIN users u ON a.student_user_id = u.id WHERE a.job_id=$1",[jobId]
     )
 
     return res
@@ -86,7 +86,7 @@ const getMyApplications = asyncHandler(async(req,res)=>{
     }
 
     const myApplications = await pool.query(
-        "SELECT a.*, j.title, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.student_id=$1",[user.id]
+        "SELECT a.*, j.title, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.student_user_id=$1",[user.id]
     )
 
     return res
@@ -99,11 +99,14 @@ const getMyApplications = asyncHandler(async(req,res)=>{
 const updateApplicationStatus = asyncHandler(async(req,res)=>{
     const {applicationId} = req.params
     const {status} = req.body
-
+    const user = req.user
+    
     if(!applicationId){
         throw new ApiError(400,"Application id is not given")
     }
-    
+    if(!status?.trim()){
+        throw new ApiError(400,"New status is required")
+    }
     if(user.role !== "RECRUITER"){
         throw new ApiError(400,"Only recruiters are allowed")
     }

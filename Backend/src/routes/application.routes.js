@@ -15,7 +15,7 @@ router.use(verifyJWT)
 
 router.route("/apply/:jobId").post(applyToJob)                 //student
 router.route("/my-applications").get(getMyApplications)        //student
-router.route("/applicants/:jobId").get(getApplicantsForJob)    //admin,recruiter
+router.route("/job/:jobId/applicants").get(getApplicantsForJob)    //admin,recruiter
 router.route("/update-status/:applicationId").post(updateApplicationStatus)   //recruiter
 
 export default router
