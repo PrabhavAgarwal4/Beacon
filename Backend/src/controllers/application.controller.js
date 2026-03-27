@@ -46,21 +46,30 @@ const applyToJob = asyncHandler(async(req,res)=>{
 
 const getApplicantsForJob = asyncHandler(async(req,res)=>{
     const {jobId} = req.params
+    const user = req.user
+
     if(!jobId){
         throw new ApiError(400,"Job id is not given")
     }
 
-    if(user.role !== "RECRUITER" && user.role !== "ADMIN"){
+    if(user.role !== "RECRUITER"){
         throw new ApiError(400,"Invalid access")
     }
 
-    const applicants = await pool.query(
-        "SELECT * FROM applications WHERE job_id=$1",[jobId]
+    //ownership check 
+    const job = await pool.query(
+        "SELECT * FROM jobs WHERE id=$1",[jobId]
     )
-
-    if(applicants.rows.length === 0){
-        throw new ApiError(404,"No applicant or job not found")
+    if(job.rows.length === 0){
+        throw new ApiError(404,"Job not found")
     }
+    if(job.rows[0].recruiter_id !== user.id){
+        throw new ApiError(403,"Not your job")
+    }
+
+    const applicants = await pool.query(
+        "SELECT a.id, a.status, u.name, u.email FROM applications a JOIN users u ON a.student_id = u.id WHERE a.job_id=$1",[jobId]
+    )
 
     return res
     .status(200)
