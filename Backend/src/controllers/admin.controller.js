@@ -53,7 +53,7 @@ const approveJob = asyncHandler(async(req,res)=>{
    }
 
    const job = await pool.query(
-    "UPDATE jobs SET is_active=true WHERE id=$1",[jobId]
+    "UPDATE jobs SET is_active=true WHERE id=$1 RETURNING*",[jobId]
    )
 
    if(job.rows.length === 0){

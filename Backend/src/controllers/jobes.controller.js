@@ -5,9 +5,8 @@ import  pool  from "../config/postgres.js"
 
 const createJob = asyncHandler(async(req,res)=>{
    const user = req.user
-
    if(user.role !== "RECRUITER"){
-    throw new ApiError(400,"Invalid request")
+    throw new ApiError(403,"Invalid request!Only recruiter is allowed")
    }
 
    const {title,description,job_type,location,stipend_or_ctc,minimum_cgpa,skills_required,application_deadline} = req.body
