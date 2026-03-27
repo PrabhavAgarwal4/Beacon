@@ -73,11 +73,11 @@ const getMyApplications = asyncHandler(async(req,res)=>{
     const user = req.user
 
     if(user.role !== "STUDENT"){
-        throw new ApiError(400,"Only students are allowed")
+        throw new ApiError(403,"Only students are allowed")
     }
 
     const myApplications = await pool.query(
-        "SELECT * FROM applications WHERE student_user_id=$1",[user.id]
+        "SELECT a.*, j.title, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.student_id=$1",[user.id]
     )
 
     return res
