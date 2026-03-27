@@ -13,9 +13,13 @@ const uploadFile = async (fileBuffer) => {
     const stream = cloudinary.uploader.upload_stream(
       { resource_type: "raw" },
       (error, result) => {
-        if (result) resolve(result);
-        else reject(error);
+      if(error){
+        console.error("Cloudinary error:", error);
+        reject(error);
+      }else {
+        resolve(result);
       }
+}
     );
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });

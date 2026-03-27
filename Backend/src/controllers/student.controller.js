@@ -79,11 +79,14 @@ const uploadResume = asyncHandler(async(req,res)=>{
    if(!req.file){
       throw new ApiError(400,"No file uploaded")
    }
+
+   // console.log("Consoling multer file",req.file)
+   
    
    //now check if there is any older resume link 
    //if yes then delete it from cloudinary
    //upload new one and save link in DB
-   
+ 
    const existing = await pool.query(
       "SELECT resume_url FROM student_details WHERE user_id=$1",[user.id]
    )
@@ -101,7 +104,14 @@ const uploadResume = asyncHandler(async(req,res)=>{
       }
    }
 
-   const newResume = await uploadFile(req.file.buffer)
+   let newResume;
+
+   try {
+     newResume = await uploadFile(req.file.buffer);
+   }catch(err){
+      console.error("Upload failed:", err);
+      throw new ApiError(500, "Resume upload failed");
+   }
    
    await pool.query(`UPDATE student_details SET resume_url=$1 WHERE user_id=$2`,[newResume.secure_url,user.id])
    
