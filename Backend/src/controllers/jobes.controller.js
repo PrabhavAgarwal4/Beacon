@@ -35,14 +35,44 @@ const createJob = asyncHandler(async(req,res)=>{
 })
 
 const getAllJobs = asyncHandler(async(req,res)=>{
-   const jobs = await pool.query(
-    "SELECT * FROM jobs WHERE is_active = true AND status = 'OPEN' ORDER BY created_at DESC"
-   );
+   
+    const {page=1,limit=10,location,job_type,min_cgpa} = req.query
 
-  return res.json(
-    new ApiResponse(200, jobs.rows, "All Jobs fetched")
-  );
+    page = parseInt(page)
+    limit = parseInt(limit)
 
+    const offset = (page-1)*limit
+
+    //dynamic query building
+    let query = `SELECT * FROM jobs WHERE is_active=true AND stats='OPEN`
+    const values = [] 
+    let index = 1
+    
+    //Filters
+    if(location){
+        query+= `AND location ILIKE $${index++}`
+        values.push(`%${location}%`)
+    }
+    if(job_type){
+        query+= `AND job_type = $${index++}`
+        values.push(job_type)
+    }
+    if(min_cgpa){
+        query+= `AND minimum_cgpa = $${index++}`
+        values.push(min_cgpa)
+    }
+
+    //Pagination
+    query+= `ORDER BY created_at DESC LIMIT $${index++} OFFSET $${index++}`
+    values.push(limit,offset)
+
+    const jobs = await pool.query(query,values)
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,jobs.rows,"Jobs fetched")
+    )
 })
 
 const getJobById = asyncHandler(async(req,res)=>{
