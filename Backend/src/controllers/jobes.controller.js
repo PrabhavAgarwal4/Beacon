@@ -174,4 +174,52 @@ const toggleJobStatus = asyncHandler(async(req,res)=>{
     )
 })
 
-export {createJob,getAllJobs,getJobById,toggleJobStatus}
+const updateJob = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { jobId } = req.params;
+
+  if (user.role !== "RECRUITER") {
+    throw new ApiError(403, "Only recruiters allowed");
+  }
+
+  // Check ownership and existence in one go
+  const jobCheck = await pool.query(
+    "SELECT recruiter_id FROM jobs WHERE id=$1",
+    [jobId]
+  );
+
+  if (jobCheck.rows.length === 0) {
+    throw new ApiError(404, "Job not found");
+  }
+
+  if (jobCheck.rows[0].recruiter_id !== user.id) {
+    throw new ApiError(403, "You do not have permission to edit this job");
+  }
+
+  const { title, description, location, stipend_or_ctc, job_type } = req.body;
+
+  // validation: Ensure at least one field is provided
+  if (![title, description, location, stipend_or_ctc, job_type].some(val => val !== undefined)) {
+      throw new ApiError(400, "At least one field is required to update");
+  }
+
+  const updated = await pool.query(
+    `UPDATE jobs
+     SET title=COALESCE($1, title), 
+         description=COALESCE($2, description), 
+         location=COALESCE($3, location), 
+         stipend_or_ctc=COALESCE($4, stipend_or_ctc), 
+         job_type=COALESCE($5, job_type),
+         is_active = false,      -- Reset approval status
+         status = 'PENDING'      -- Mark as pending for Admin 
+     WHERE id=$6
+     RETURNING *`,
+    [title, description, location, stipend_or_ctc, job_type, jobId]
+  );
+
+  return res.json(
+    new ApiResponse(200, updated.rows[0], "Job updated. Waiting for admin re-approval.")
+  );
+});
+
+export {createJob,getAllJobs,getJobById,toggleJobStatus,updateJob}
