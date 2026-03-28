@@ -10,7 +10,7 @@ router.route("/create").post(createJob)
 router.route("/").get(getAllJobs)
 router.route("/:jobId").get(getJobById)
 router.route("/toggle-status/:jobId").post(toggleJobStatus)
-router.route("/update-job/:jobId").post(updateJob)
-router.route("/delete").post(deleteJob)
+router.route("/update/:jobId").post(updateJob)
+router.route("/delete/:jobId").post(deleteJob)
 
 export default router;
