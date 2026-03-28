@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
-
+import morgan from "morgan"
 const app = express()
 
 app.use(cors({
@@ -20,6 +20,8 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 app.use(cookieParser())
 
+//morgan
+app.use(morgan("dev"));
 
 import userRouter from "./routes/user.routes.js"
 import adminRouter from "./routes/admin.routes.js"
