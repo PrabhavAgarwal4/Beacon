@@ -222,4 +222,29 @@ const updateJob = asyncHandler(async (req, res) => {
   );
 });
 
-export {createJob,getAllJobs,getJobById,toggleJobStatus,updateJob}
+const deleteJob = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const { jobId } = req.params;
+
+  if (user.role !== "RECRUITER") {
+    throw new ApiError(403, "Only recruiters allowed");
+  }
+
+  // Verify ownership
+  const jobCheck = await pool.query("SELECT recruiter_id FROM jobs WHERE id=$1", [jobId]);
+
+  if (jobCheck.rows.length === 0) {
+    throw new ApiError(404, "Job not found");
+  }
+
+  if (jobCheck.rows[0].recruiter_id !== user.id) {
+    throw new ApiError(403, "You can only delete your own jobs");
+  }
+
+  // Actual deletion
+  await pool.query("DELETE FROM jobs WHERE id=$1", [jobId]);
+
+  return res.json(new ApiResponse(200, {}, "Job deleted successfully"));
+});
+
+export {createJob,getAllJobs,getJobById,toggleJobStatus,updateJob,deleteJob}
