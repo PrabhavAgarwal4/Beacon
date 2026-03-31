@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 
 const verifyJWT = (req, res, next) => {
   try {
-    const token =  req.header("Authorization")?.replace("Bearer ","") //customToken from mobile application
+    const token =  req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","") //customToken from mobile application
    //req.cookies?.accessToken ||
     if (!token) throw new ApiError(401, "Unauthorized");
 
