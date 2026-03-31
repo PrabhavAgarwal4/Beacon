@@ -38,7 +38,7 @@ const getAllJobs = asyncHandler(async (req, res) => {
   // Added search, sortBy, and order to destructuring
   let { 
     page = 1, 
-    limit = 10, 
+    limit = 5, 
     location, 
     job_type, 
     min_cgpa, 
