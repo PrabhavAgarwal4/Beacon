@@ -5,6 +5,7 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading,setLoading] = useState(true);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -15,13 +16,15 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         setUser(null);
         localStorage.removeItem("user");
+      }finally{
+        setLoading(false)
       }
     };
     checkUser();
   }, []); //calls /me on every refresh
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,8 +2,8 @@ import React, { useContext } from 'react'
 import {AuthContext} from "../../context/authContext.jsx"
 
 const Home = () => {
-  const {user} = useContext(AuthContext)
-
+  const {user,loading} = useContext(AuthContext)
+  if(loading) return <h2>Loading...</h2>
   return (
     <div>
       <h1>Home</h1>
