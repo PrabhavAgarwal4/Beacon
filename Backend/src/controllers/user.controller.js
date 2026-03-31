@@ -155,5 +155,24 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
     )
 })
 
+const logout = asyncHandler(async (req, res) => {
+    const user = req.user;
+    
+    const cookieOptions = {
+        httpOnly: true,
+        secure: true, 
+        sameSite: 'None', 
+    };
 
-export {registerUser,loginUser,getUser,refreshAccessToken}
+    await pool.query(
+    "UPDATE users SET refresh_token = NULL WHERE id = $1",[user.id]
+    );
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
+        .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+export {registerUser,loginUser,getUser,refreshAccessToken,logout}
