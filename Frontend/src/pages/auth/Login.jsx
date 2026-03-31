@@ -15,11 +15,13 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try{
-      const data  = await loginUser({email,password})
+      const data  = await loginUser({email,password}) //login
       
-      const res = await getUser()
+      const res = await getUser() //get user details 
       console.log(res.data)
-      setUser(res.data.data)
+      setUser(res.data.data)//set the user 
+      localStorage.setItem("user", JSON.stringify(res.data.data));//save in localStroage to prevent on refresh
+
       navigate("/");
     }catch(err){
       console.log(err)
