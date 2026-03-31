@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { registerUser } from "../../services/authService.js";
+import { registerUser } from "../../services/userService.js";
 import { AuthContext } from "../../context/authContext.jsx";
 import { useNavigate, Link } from "react-router-dom";
 

@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext.jsx"
-import { logoutUser } from "../../services/authService.js";
+import { logoutUser } from "../../services/userService.js";
 import { useNavigate } from "react-router-dom";
 
 function Home() {

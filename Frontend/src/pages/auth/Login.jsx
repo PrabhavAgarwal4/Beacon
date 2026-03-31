@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { getUser, loginUser } from "../../services/authService.js";
+import { getUser, loginUser } from "../../services/userService.js";
 import { AuthContext } from "../../context/authContext.jsx";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -31,7 +31,7 @@ function Login() {
 
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      setError(err.response?.data?.message || "Server down");
       console.error(err);
     } finally {
       setLoading(false);
