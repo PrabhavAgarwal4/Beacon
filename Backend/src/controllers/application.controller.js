@@ -86,8 +86,20 @@ const getMyApplications = asyncHandler(async(req,res)=>{
     }
 
     const myApplications = await pool.query(
-        "SELECT a.*, j.title, j.location FROM applications a JOIN jobs j ON a.job_id = j.id WHERE a.student_user_id=$1",[user.id]
-    )
+        `SELECT 
+            a.id, 
+            a.status, 
+            a.created_at as applied_at,
+            j.title, 
+            j.location, 
+            j.stipend_or_ctc,
+            j.id as job_id
+         FROM applications a
+         JOIN jobs j ON a.job_id = j.id
+         WHERE a.student_user_id = $1
+         ORDER BY a.created_at DESC`,
+        [user.id]
+    );
 
     return res
     .status(200)
