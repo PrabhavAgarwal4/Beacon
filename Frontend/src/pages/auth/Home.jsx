@@ -66,29 +66,14 @@ const Home = () => {
     );
   }
 
-  // 3. Recruiter Dashboard
-  if (user.role === "RECRUITER") {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Recruiter Hub</h1>
-          <p className="text-gray-500 mb-10">Manage your active listings and find top talent.</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-            <Link to="/post-job" className="bg-white p-8 rounded-2xl border border-gray-200 hover:border-blue-400 transition-all">
-              <h3 className="text-xl font-bold text-gray-900">Post a Job</h3>
-              <p className="text-gray-500 text-sm mt-2">Create a new listing for internships or full-time positions.</p>
-            </Link>
-            <Link to="/my-jobs" className="bg-white p-8 rounded-2xl border border-gray-200 hover:border-blue-400 transition-all">
-              <h3 className="text-xl font-bold text-gray-900">Manage Listings</h3>
-              <p className="text-gray-500 text-sm mt-2">Review applicants, shortlist candidates, or close active jobs.</p>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+ 
+  // 3. Recruiter Redirect
+   if(user.role === "RECRUITER") {
+      return <Navigate to="/recruiter" replace />;
+   }
   
+  
+  // 4. Admin dashboard
   if(user.role === "ADMIN"){
     return <Navigate to="/admin" replace/>
   }

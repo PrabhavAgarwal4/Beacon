@@ -13,6 +13,14 @@ import AdminOverview from "./pages/admin/AdminOverview.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import PendingUsers from "./pages/admin/PendingUsers.jsx";
 import PendingJobs from "./pages/admin/PendingJobs.jsx";
+import RecruiterProfile from "./pages/recruiter/RecruiterProfile.jsx";
+import RecruiterLayout from "./pages/recruiter/RecruiterLayout.jsx";
+import MyJobs from "./pages/recruiter/MyJobs.jsx";
+import PostJob from "./pages/recruiter/PostJob.jsx";
+import JobApplicants from "./pages/recruiter/JobApplicants.jsx";
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard.jsx"
+import StudentProfileView from "./pages/recruiter/StudentProfileView.jsx";
+
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext.jsx";
 
@@ -70,6 +78,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Recruiter Section */}
+        <Route path="/recruiter" element={<RecruiterLayout />}>
+          <Route index element={<RecruiterDashboard />} />
+          <Route path="my-jobs" element={<MyJobs />} />
+          <Route path="post-job" element={<PostJob />} />
+          <Route path="job-applicants/:jobId" element={<JobApplicants />} />
+          <Route path="profile" element={<RecruiterProfile />} />
+          <Route path="student-profile/:studentId" element={<StudentProfileView/>}/>
+        </Route>
 
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
