@@ -1,13 +1,14 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/authContext';
+import { logoutUser } from '../services/userService';
 
 const Navbar = () => {
-  const { user, logout } = useContext(AuthContext); // Ensure your AuthContext has a logout function
+  const { user} = useContext(AuthContext); // Ensure your AuthContext has a logout function
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
+    await logoutUser();
     navigate('/login');
   };
 
@@ -23,7 +24,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Dynamic Links */}
+          {/* Dynamic Links(Diff for student and recruiter) */}
           <div className="hidden md:flex space-x-8 items-center">
             {user?.role === "STUDENT" && (
               <>
