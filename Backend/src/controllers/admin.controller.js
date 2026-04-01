@@ -8,9 +8,13 @@ const getPendingUsers = asyncHandler(async (req, res) => {
     const query = `
         SELECT 
             u.id, u.name, u.email, u.role, u.created_at,
-            s.rollno, s.department, s.course, s.graduation_year, s.cgpa, s.phone, s.resume_url
+            -- Student Fields
+            s.rollno, s.department, s.course, s.graduation_year, s.cgpa, s.phone as student_phone, s.resume_url,
+            -- Recruiter Fields
+            r.company_name, r.company_website, r.company_description, r.designation, r.phone as recruiter_phone
         FROM users u
         LEFT JOIN student_details s ON u.id = s.user_id
+        LEFT JOIN recruiter_details r ON u.id = r.user_id
         WHERE u.status = 'PENDING'
         ORDER BY u.created_at DESC
     `;
@@ -20,7 +24,7 @@ const getPendingUsers = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(200, result.rows, "Pending users fetched with details")
+            new ApiResponse(200, result.rows, "All pending users fetched with role-specific details")
         );
 });
 
