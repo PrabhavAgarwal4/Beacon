@@ -1,28 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJobById } from "../../services/jobService.js";
+import { applyForJob, getApplicationStatus } from '../../services/applicationService.js';
+import { AuthContext } from "../../context/authContext.jsx";
 
 const JobDetails = () => {
   const { jobId } = useParams();
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [application, setApplication] = useState(null); 
+  const [applying, setApplying] = useState(false);
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchDetails = async () => {
       setLoading(true);
       try {
-        const res = await getJobById({ jobId });
-        // Based on your Axios log: res.data.data
-        setJob(res.data.data);
+        // Fetch Job details
+        const jobRes = await getJobById({ jobId });
+        setJob(jobRes.data.data);
+
+        // Fetch Application Status separately so it doesn't crash the job fetch
+        try {
+          const appRes = await getApplicationStatus({ jobId });
+          // Only set if the backend returns actual application data
+          setApplication(appRes.data.data); 
+        } catch (appErr) {
+          // If 404 or 400, it just means they haven't applied yet. 
+          // We stay silent and keep application as null.
+          console.log("User has not applied to this job yet.");
+          setApplication(null);
+        }
+
       } catch (error) {
         console.error("Error fetching job details:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchJob();
+    fetchDetails();
   }, [jobId]);
+
+  const handleApply = async () => {
+    try {
+      setApplying(true);
+      const res = await applyForJob({ jobId });
+      // Update local state with the application object returned from backend
+      setApplication(res.data.data); 
+    } catch (error) {
+      console.error("Application failed:", error);
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  // Helper for Button Text
+  const getStatusDisplay = () => {
+    if (applying) return "Applying...";
+    if (application) return `Application ${application.status}`;
+    return "Apply Now";
+  };
 
   if (loading) {
     return (
@@ -38,7 +77,7 @@ const JobDetails = () => {
         <h1 className="text-2xl font-bold text-gray-800">Job Not Found</h1>
         <p className="text-gray-500 mt-2">The position you are looking for might have been closed or removed.</p>
         <button 
-          onClick={() => navigate("/jobs")}
+          onClick={() => navigate("/job")}
           className="mt-6 text-blue-600 font-semibold hover:underline"
         >
           ← Back to All Jobs
@@ -61,7 +100,7 @@ const JobDetails = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Main Content Area: Left (2 Columns wide) */}
+          {/* Left Column: Job Content */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
               <div className="flex justify-between items-start mb-6">
@@ -81,14 +120,14 @@ const JobDetails = () => {
               </div>
 
               <div className="prose prose-blue max-w-none">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Job Description</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-[18px]">Job Description</h3>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
                   {job.description}
                 </p>
               </div>
 
               <div className="mt-10">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Required Skills</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 text-[18px]">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
                   {job.skills_required.split(',').map((skill, index) => (
                     <span 
@@ -103,14 +142,30 @@ const JobDetails = () => {
             </div>
           </div>
 
-          {/* Sidebar: Right (1 Column wide) */}
+          {/* Right Column: Sidebar Action & Info */}
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-8">
               <div className="space-y-6">
-                <div>
-                  <button className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                    Apply for this Job
+                <div className="text-center">
+                  <button 
+                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg 
+                      ${!application 
+                        ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200" 
+                        : "bg-gray-100 text-gray-500 border border-gray-200 cursor-default"
+                      }`}
+                    onClick={handleApply} 
+                    disabled={applying || !!application}
+                  >
+                    {getStatusDisplay()}
                   </button>
+                  
+                  {application && (
+                    <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-100">
+                      <p className="text-xs text-green-700 font-medium">
+                        ✓ Your application is currently <span className="font-bold underline">{application.status}</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <hr className="border-gray-100" />
