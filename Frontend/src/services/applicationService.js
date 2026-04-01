@@ -8,3 +8,6 @@ export const getApplicationStatus = ({jobId})=>{
     params:{jobId}
   })
 }
+export const getMyApplications = () => {
+  return api.get("/application/my-applications");
+};

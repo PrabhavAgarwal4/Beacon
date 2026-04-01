@@ -6,6 +6,7 @@ import Register from "./pages/auth/Register.jsx";
 import Jobs from "./pages/jobs/Jobs.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import JobDetails from "./pages/jobs/JobDetails.jsx";
+import Applications from "./pages/student/Applications.jsx";
 
 function App() {
   return (
@@ -28,13 +29,21 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route 
-        path="/job/:jobId"
-        element={
-          <ProtectedRoute>
-            <JobDetails/>
-          </ProtectedRoute>
-        }
+        <Route
+          path="/job/:jobId"
+          element={
+            <ProtectedRoute>
+              <JobDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/applications"
+          element={
+            <ProtectedRoute>
+              <Applications />
+            </ProtectedRoute>
+          }
         />
 
         {/* Public Routes */}
