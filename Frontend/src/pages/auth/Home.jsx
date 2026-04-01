@@ -90,7 +90,7 @@ const Home = () => {
   }
   
   if(user.role === "ADMIN"){
-    return <Navigate to="/adminDashboard" replace/>
+    return <Navigate to="/admin" replace/>
   }
   return null;
 };

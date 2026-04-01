@@ -8,7 +8,9 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
+    alert("Logout clicked");
     await logoutUser();
+    alert("Logout done")
     navigate('/login');
   };
 
