@@ -144,8 +144,8 @@ const getApplicationStatus = asyncHandler(async(req,res)=>{
     const {jobId} = req.query
     const userId = req.user.id
 
-    if(!userId || !jobId){
-        throw new ApiError(400,"User id or Job id are not given")
+    if(!jobId){
+        throw new ApiError(400,"Job id are not given")
     } 
 
     const app = await pool.query(

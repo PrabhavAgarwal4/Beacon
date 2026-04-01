@@ -19,6 +19,6 @@ router.route("/apply/:jobId").post(rateLimiter(5,900),applyToJob)      //student
 router.route("/my-applications").get(getMyApplications)        //student
 router.route("/job/:jobId/applicants").get(getApplicantsForJob)    //admin,recruiter
 router.route("/update-status/:applicationId").post(updateApplicationStatus)   //recruiter
-router.route("/application-status/:jobId").get(getApplicationStatus) //student
+router.route("/application-status").get(getApplicationStatus) //student
 
 export default router
