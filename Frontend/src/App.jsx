@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/auth/Home.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
-import Jobs from "./pages/Jobs.jsx";
+import Jobs from "./pages/jobs/Jobs.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import JobDetails from "./pages/jobs/JobDetails.jsx";
 
 function App() {
   return (
@@ -20,12 +21,20 @@ function App() {
           }
         />
         <Route
-          path="/jobs"
+          path="/job"
           element={
             <ProtectedRoute>
               <Jobs />
             </ProtectedRoute>
           }
+        />
+        <Route 
+        path="/job/:jobId"
+        element={
+          <ProtectedRoute>
+            <JobDetails/>
+          </ProtectedRoute>
+        }
         />
 
         {/* Public Routes */}

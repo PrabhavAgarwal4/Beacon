@@ -1,12 +1,16 @@
 import React from 'react';
+import {useNavigate} from "react-router-dom"
 
 function JobCard({ job }) {
+  const navigate = useNavigate()
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+    onClick={()=> navigate(`/job/${job.id}`)} >
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 cursor-pointer">
+            <h3 className="text-xl font-bold text-gray-900 hover:text-blue-600 ">
               {job.title}
             </h3>
             <span

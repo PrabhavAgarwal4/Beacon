@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getAllJobs } from "../services/jobService.js";
-import JobCard from "../components/JobCard.jsx"; // Import the new component
+import { getAllJobs } from "../../services/jobService.js";
+import JobCard from "../../components/JobCard.jsx"; // Import the new component
 
 function Jobs() {
   const [jobs, setJobs] = useState([]);
