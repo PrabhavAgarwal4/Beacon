@@ -74,19 +74,29 @@ const getStudentProfile = asyncHandler(async(req,res)=>{
       throw new ApiError(403, "You can only view your own profile");
    }
 
-   const student = await pool.query(
-    'SELECT rollno,department,course,graduation_year,cgpa,phone FROM student_details WHERE user_id=$1',[targetId]
-   )
+   const query = `
+        SELECT 
+            u.name, u.email, 
+            s.rollno, s.department, s.course, s.graduation_year, s.cgpa, s.phone, s.resume_url 
+        FROM users u
+        LEFT JOIN student_details s ON u.id = s.user_id
+        WHERE u.id = $1
+    `;
 
-   if(student.rows.length === 0){
-    throw new ApiError(404,"Student not found")
-   }
+    const result = await pool.query(query, [targetId]);
 
-   return res
-   .status(200)
-   .json(
-    new ApiResponse(200,student.rows[0],"Student details fetched")
-   )
+    if (result.rows.length === 0) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Check if they are a student but haven't filled details yet
+    const studentData = result.rows[0];
+    
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, studentData, "Student profile fetched successfully")
+        );
 })
 
 

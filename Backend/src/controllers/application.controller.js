@@ -68,7 +68,7 @@ const getApplicantsForJob = asyncHandler(async(req,res)=>{
     }
 
     const applicants = await pool.query(
-        "SELECT a.id, a.status, u.name, u.email , u.id as student_user_id FROM applications a JOIN users u ON a.student_user_id = u.id WHERE a.job_id=$1",[jobId]
+        "SELECT a.id, a.status, u.name, u.email , u.id as student_user_id,j.title as job_title FROM applications a JOIN users u ON a.student_user_id = u.id JOIN jobs j ON a.job_id=j.id WHERE a.job_id=$1",[jobId]
     )
 
     return res
