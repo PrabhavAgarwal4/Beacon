@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,Navigate } from 'react-router-dom';
 import { AuthContext } from '../../context/authContext';
 
 const Home = () => {
   const { user } = useContext(AuthContext);
-
+ 
   // 1. Guest View (Not Logged In)
   if (!user) {
     return (
@@ -88,7 +88,10 @@ const Home = () => {
       </div>
     );
   }
-
+  
+  if(user.role === "ADMIN"){
+    return <Navigate to="/adminDashboard" replace/>
+  }
   return null;
 };
 
