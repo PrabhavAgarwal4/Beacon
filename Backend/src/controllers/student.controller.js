@@ -4,42 +4,62 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import pool from "../config/postgres.js";
 import { getPublicId,deleteFile,uploadFile } from "../utils/cloudinary.js";
 
-const setStudentProfile = asyncHandler(async(req,res)=>{
-   const userId = req.user.id 
-   const {rollno,department,course,graduation_year,cgpa,phone} = req.body
-   
-   //roll check 
-   if(req.user.role !== "STUDENT"){
-      throw new ApiError(403,"Invalid access! Only students are allowed")
-   }
+const setStudentProfile = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { rollno, department, course, graduation_year, cgpa, phone } = req.body;
 
-   //duplicate check 
-   const existingStudent = await pool.query(
-    "SELECT * FROM student_details WHERE user_id=$1",[userId]
-   )
-   if(existingStudent.rows.length !== 0){
-      throw new ApiError(400,"Student already exists")
-   }
+    if (req.user.role !== "STUDENT") {
+        throw new ApiError(403, "Invalid access! Only students are allowed");
+    }
 
+    if (!rollno || !department?.trim() || !course?.trim() || !phone?.trim() || !graduation_year || !cgpa) {
+        throw new ApiError(400, "All fields are required");
+    }
 
-   if(!rollno || !department?.trim() || !course?.trim() || !phone?.trim() || !graduation_year || !cgpa){
-      throw new ApiError(400,"All fields are required")
-   }
+    const client = await pool.connect(); //start a client for the transaction
 
-   const student = await pool.query(
-        "INSERT INTO student_details (user_id,rollno,department,course,graduation_year,cgpa,phone) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id,rollno,department,course,graduation_year,cgpa",[userId,rollno,department,course,graduation_year,cgpa,phone]
-   )
+    try {
+        await client.query('BEGIN');//start transaction
 
-   if(student.rowCount === 0){
-      throw new ApiError(400,"Student details failed to save")
-   }
+        //upsert student details
+        const profileQuery = `
+            INSERT INTO student_details (user_id, rollno, department, course, graduation_year, cgpa, phone)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                rollno = EXCLUDED.rollno,
+                department = EXCLUDED.department,
+                course = EXCLUDED.course,
+                graduation_year = EXCLUDED.graduation_year,
+                cgpa = EXCLUDED.cgpa,
+                phone = EXCLUDED.phone
+            RETURNING *;
+        `;
+        const profileResult = await client.query(profileQuery, [userId, rollno, department, course, graduation_year, cgpa, phone]);
 
-   return res
-   .status(201)
-   .json(
-    new ApiResponse(201,"Student details saved")
-   )
-})
+        //reset for admin approval
+        const userUpdateQuery = `
+            UPDATE users 
+            SET status = 'PENDING', is_active = false 
+            WHERE id = $1
+        `;
+        await client.query(userUpdateQuery, [userId]);
+
+        await client.query('COMMIT'); // save changes
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, profileResult.rows[0], "Profile saved. Waiting for Admin re-approval.")
+            );
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error("Transaction Error:", error);
+        throw new ApiError(500, "Failed to update profile and status");
+    } finally {
+        client.release();
+    }
+});
 
 
 const getStudentProfile = asyncHandler(async(req,res)=>{
