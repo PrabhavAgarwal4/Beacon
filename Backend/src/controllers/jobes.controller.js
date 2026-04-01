@@ -247,4 +247,18 @@ const deleteJob = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, {}, "Job deleted successfully"));
 });
 
-export {createJob,getAllJobs,getJobById,toggleJobStatus,updateJob,deleteJob}
+const getMyPostedJobs = asyncHandler(async(req,res)=>{
+  const userId = req.user.id
+  
+  const jobs = await pool.query(
+    `SELECT * FROM jobs WHERE recruiter_id=$1`,[userId]
+  )
+
+  return  res
+  .status(200)
+  .json(
+    new ApiResponse(200,jobs.rows,"My posted jobs fetched")
+  )
+})
+
+export {createJob,getAllJobs,getJobById,toggleJobStatus,updateJob,deleteJob,getMyPostedJobs}
