@@ -6,12 +6,15 @@ const router = Router()
 
 router.use(verifyJWT)
 
+//static routes
 router.route("/create").post(createJob)
 router.route("/").get(getAllJobs)
+router.route("/my-job").get(getMyPostedJobs)
+
+//dynamic routes
 router.route("/:jobId").get(getJobById)
 router.route("/toggle-status/:jobId").post(toggleJobStatus)
 router.route("/update/:jobId").post(updateJob)
 router.route("/delete/:jobId").post(deleteJob)
-router.route("/my-job").get(getMyPostedJobs)
 
 export default router;
