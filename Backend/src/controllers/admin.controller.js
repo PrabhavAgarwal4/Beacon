@@ -4,16 +4,25 @@ import { ApiError } from "../utils/ApiError.js"
 import  pool  from "../config/postgres.js"
 
 
-const getPendingUsers = asyncHandler(async(req,res)=>{
-    const result = await pool.query(
-        "SELECT id,name,email,role FROM users where status='PENDING'"
-    )
+const getPendingUsers = asyncHandler(async (req, res) => {
+    const query = `
+        SELECT 
+            u.id, u.name, u.email, u.role, u.created_at,
+            s.rollno, s.department, s.course, s.graduation_year, s.cgpa, s.phone, s.resume_url
+        FROM users u
+        LEFT JOIN student_details s ON u.id = s.user_id
+        WHERE u.status = 'PENDING'
+        ORDER BY u.created_at DESC
+    `;
+    
+    const result = await pool.query(query);
+
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200,result.rows,"Pending users fetched successfully")
-    )
-})
+        .status(200)
+        .json(
+            new ApiResponse(200, result.rows, "Pending users fetched with details")
+        );
+});
 
 const approveUser = asyncHandler(async(req,res)=>{
     const userId = req.body.userId
