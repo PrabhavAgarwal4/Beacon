@@ -140,7 +140,27 @@ const updateApplicationStatus = asyncHandler(async(req,res)=>{
     )
 })
 
+const getApplicationStatus = asyncHandler(async(req,res)=>{
+    const {jobId} = req.query
+    const userId = req.user.id
+
+    if(!userId || !jobId){
+        throw new ApiError(400,"User id or Job id are not given")
+    } 
+
+    const app = await pool.query(
+        `SELECT status FROM applications WHERE student_user_id=$1 AND job_id=$2`,[userId,jobId]
+    )
+    
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,app.rows[0] || null,"Application status fetched")
+    )
+})
+
 export {applyToJob,
   getMyApplications,
   getApplicantsForJob,
-  updateApplicationStatus}
+  updateApplicationStatus,
+getApplicationStatus}
