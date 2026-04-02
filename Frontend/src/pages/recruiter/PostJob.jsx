@@ -1,20 +1,45 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createJob } from '../../services/recruiterService';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createJob, updateJob } from '../../services/recruiterService'; // Added updateJob
+import { getJobById } from '../../services/jobService';
 
 const PostJob = () => {
   const navigate = useNavigate();
+  const { jobId } = useParams();
+  const isEdit = !!jobId;
+  
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    job_type: 'FULL_TIME', // Default value matching your enum
+    job_type: 'FULL_TIME',
     location: '',
     stipend_or_ctc: '',
     minimum_cgpa: '',
     skills_required: '',
     application_deadline: ''
   });
+
+  useEffect(() => {
+    if (isEdit) {
+      const fetchJobData = async () => {
+        try {
+          const res = await getJobById(jobId);
+          const data = res.data.data;
+          
+          // FIX: Format the date string for the HTML input
+          if (data.application_deadline) {
+            data.application_deadline = data.application_deadline.split('T')[0];
+          }
+          
+          setFormData(data);
+        } catch (error) {
+          console.error("Error fetching job:", error);
+        }
+      };
+      fetchJobData();
+    }
+  }, [jobId, isEdit]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,11 +49,16 @@ const PostJob = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await createJob(formData);
-      alert("Job posted! Waiting for Admin approval.");
+      if (isEdit) {
+        await updateJob(jobId, formData);
+        alert("Job updated successfully!");
+      } else {
+        await createJob(formData);
+        alert("Job posted! Waiting for Admin approval.");
+      }
       navigate('/recruiter/my-jobs');
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to post job");
+      alert(err.response?.data?.message || "Action failed");
     } finally {
       setLoading(false);
     }
@@ -37,8 +67,12 @@ const PostJob = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900">Create New Opportunity</h1>
-        <p className="text-slate-500">Provide clear details to attract the best matching talent.</p>
+        <h1 className="text-3xl font-black text-slate-900">
+          {isEdit ? "Edit Posting" : "Create New Opportunity"}
+        </h1>
+        <p className="text-slate-500">
+          {isEdit ? "Update the details of your job listing." : "Provide clear details to attract the best matching talent."}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-8">
@@ -111,20 +145,21 @@ const PostJob = () => {
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Required Skills</label>
             <input 
               type="text" name="skills_required" required value={formData.skills_required} onChange={handleChange}
-              placeholder="React, Node.js, SQL (comma separated)"
+              placeholder="React, Node.js, SQL"
               className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Application Deadline</label>
             <input 
-              type="date" name="application_deadline" required value={formData.application_deadline} onChange={handleChange}
+              type="date" name="application_deadline" required 
+              value={formData.application_deadline} 
+              onChange={handleChange}
               className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
         </div>
 
-        {/* Form Actions */}
         <div className="pt-6 flex gap-4">
           <button 
             type="button" 
@@ -138,7 +173,7 @@ const PostJob = () => {
             disabled={loading}
             className="flex-2 py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all disabled:bg-slate-300"
           >
-            {loading ? "Processing..." : "Submit for Approval"}
+            {loading ? "Processing..." : isEdit ? "Update Listing" : "Submit for Approval"}
           </button>
         </div>
       </form>

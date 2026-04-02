@@ -4,7 +4,7 @@ import api from "./api";
 
 export const toggleJobStatus = (jobId) => api.post(`/job/toggle-status/${jobId}`)
 export const createJob = (formData) => api.post(`/job/create`,formData)
-export const updateJob = (jobId) => api.post(`/job/update/${jobId}`)
+export const updateJob = (jobId,formData) => api.post(`/job/update/${jobId}`,formData)
 export const deleteJob = (jobId) => api.post(`/job/delete/${jobId}`)
 
 export const updateAppStatus = (appId,status) => api.post(`/application/update-status/${appId}`,status) //status in req.body

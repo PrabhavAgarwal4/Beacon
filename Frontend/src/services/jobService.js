@@ -5,6 +5,6 @@ export const getAllJobs = ({ page = 1, search = "", location = "", job_type = ""
     params: { page, search, location, job_type }
   });
 };
-export const getJobById = ({jobId}) =>{
+export const getJobById = (jobId) =>{
   return api.get(`/job/${jobId}`);
 }

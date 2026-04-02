@@ -20,6 +20,7 @@ import PostJob from "./pages/recruiter/PostJob.jsx";
 import JobApplicants from "./pages/recruiter/JobApplicants.jsx";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard.jsx"
 import StudentProfileView from "./pages/recruiter/StudentProfileView.jsx";
+import RecruiterJobDetail from "./pages/recruiter/RecruiterJobDeatil.jsx";
 
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext.jsx";
@@ -86,6 +87,8 @@ function App() {
           <Route path="job-applicants/:jobId" element={<JobApplicants />} />
           <Route path="profile" element={<RecruiterProfile />} />
           <Route path="student-profile/:studentId" element={<StudentProfileView/>}/>
+          <Route path="job-details/:jobId" element={<RecruiterJobDetail />} />
+          <Route path="update-job/:jobId" element={<PostJob isEdit={true} />} />
         </Route>
 
         {/* Public Routes */}

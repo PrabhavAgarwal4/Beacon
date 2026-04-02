@@ -11,6 +11,7 @@ const MyJobs = () => {
     setLoading(true);
     try {
       const res = await getMyPostedJobs();
+      console.log(res)
       setJobs(res.data.data);
     } catch (err) {
       console.error("Error fetching jobs:", err);
@@ -65,7 +66,8 @@ const MyJobs = () => {
           </div>
         ) : (
           jobs.map((job) => (
-            <div key={job.id} className="bg-white p-6 rounded-2rem border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-center group hover:border-blue-500 transition-all">
+            <div key={job.id} onClick={() => navigate(`/recruiter/job-details/${job.id}`)}
+            className="bg-white p-6 rounded-2rem border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-center group hover:border-blue-500 transition-all">
               
               {/* Job Info */}
               <div className="flex-1 space-y-2">
