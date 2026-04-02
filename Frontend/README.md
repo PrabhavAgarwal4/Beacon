@@ -72,49 +72,48 @@ src/
 └── App.jsx           # Main routing logic and theme configuration
 ```
 
-Environment Variables
-Create a .env file in the root directory to connect to the backend:
+## Environment Variables
 
-Code snippet
+Create a `.env` file in the root directory to connect to the backend:
+```env
 VITE_API_BASE_URL=http://localhost:3000/api/v1
 NODE_ENV=development
-Installation
-Clone the repository
+```
 
-Install dependencies
+## Installation
 
-Bash
-npm install
-Configure the environment variables in .env
+1. Clone the repository
+2. Install dependencies
+```bash
+   npm install
+```
+3. Configure the environment variables in `.env`
+4. Run the development server
+```bash
+   npm run dev
+```
 
-Run the development server
+## UI Components & Design System
 
-Bash
-npm run dev
-UI Components & Design System
-Responsive Grids: Optimized for both mobile job-seekers and desktop recruiters.
+- **Responsive Grids:** Optimized for both mobile job-seekers and desktop recruiters.
+- **Interactive Modals:** Confirmation dialogs for critical actions (e.g., deleting a job or rejecting a candidate).
+- **Dynamic Badges:** Color-coded status indicators for immediate visual feedback.
+- **Clean Forms:** Validated inputs for complex data types like CGPA and application deadlines.
 
-Interactive Modals: Confirmation dialogs for critical actions (e.g., deleting a job or rejecting a candidate).
+## Error Handling & Feedback
 
-Dynamic Badges: Color-coded status indicators for immediate visual feedback.
+- **Toast Notifications:** Real-time alerts for successful actions and error states.
+- **Loading Skeletons:** Smooth perceived performance during data fetching.
+- **Fallback UI:** Graceful handling of empty states and "404 Not Found" scenarios.
 
-Clean Forms: Validated inputs for complex data types like CGPA and application deadlines.
+## Future Roadmap
 
-Error Handling & Feedback
-Toast Notifications: Real-time alerts for successful actions and error states.
+- **Dark Mode:** System-wide theme toggle.
+- **Analytics Charts:** Visual hiring trends for recruiters using Chart.js.
+- **Direct Messaging:** Integrated chat between recruiters and shortlisted candidates.
+- **Push Notifications:** Browser-based alerts for status updates.
 
-Loading Skeletons: Smooth perceived performance during data fetching.
+## Author
 
-Fallback UI: Graceful handling of empty states and "404 Not Found" scenarios.
-
-Future Roadmap
-Dark Mode: System-wide theme toggle.
-
-Analytics Charts: Visual hiring trends for recruiters using Chart.js.
-
-Direct Messaging: Integrated chat between recruiters and shortlisted candidates.
-
-Push Notifications: Browser-based alerts for status updates.
-
-Author
-Developed as part of the Beacon ecosystem, focusing on modern frontend architecture, intuitive UX design, and secure role-based navigation.
+Developed as part of the Beacon ecosystem, focusing on modern frontend architecture,
+intuitive UX design, and secure role-based navigation.
