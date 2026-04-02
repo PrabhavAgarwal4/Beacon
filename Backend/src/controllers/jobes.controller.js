@@ -212,58 +212,69 @@ const toggleJobStatus = asyncHandler(async (req, res) => {
 });
 
 const updateJob = asyncHandler(async (req, res) => {
-  const user = req.user;
   const { jobId } = req.params;
+  const userId = req.user.id;
 
-  if (user.role !== "RECRUITER") {
-    throw new ApiError(403, "Only recruiters allowed");
-  }
-
-  // Check ownership and existence in one go
+  // 1. Basic Ownership & Existence Check
   const jobCheck = await pool.query(
-    "SELECT recruiter_id FROM jobs WHERE id=$1",
-    [jobId],
+    "SELECT recruiter_id FROM jobs WHERE id=$1", 
+    [jobId]
   );
 
-  if (jobCheck.rows.length === 0) {
-    throw new ApiError(404, "Job not found");
+  if (jobCheck.rows.length === 0) throw new ApiError(404, "Job not found");
+  if (jobCheck.rows[0].recruiter_id !== userId) {
+    throw new ApiError(403, "Unauthorized access");
   }
 
-  if (jobCheck.rows[0].recruiter_id !== user.id) {
-    throw new ApiError(403, "You do not have permission to edit this job");
-  }
+  // 2. Destructure fields
+  const { 
+    title, description, location, stipend_or_ctc, 
+    job_type, minimum_cgpa, skills_required, application_deadline 
+  } = req.body;
 
-  const { title, description, location, stipend_or_ctc, job_type } = req.body;
+  // 3. Simple Data Type Cleanup
+  // Ensure CGPA is a number if provided, otherwise null
+  const numericCGPA = minimum_cgpa ? parseFloat(minimum_cgpa) : null;
+  
+  // Ensure Deadline is a valid date or null
+  const formattedDeadline = application_deadline ? new Date(application_deadline) : null;
 
-  // validation: Ensure at least one field is provided
-  if (
-    ![title, description, location, stipend_or_ctc, job_type].some(
-      (val) => val !== undefined,
-    )
-  ) {
-    throw new ApiError(400, "At least one field is required to update");
-  }
+  // Update Query - Using CASE to avoid unique constraint "self-collision"
+  const query = `
+    UPDATE jobs
+    SET 
+      title = CASE WHEN $1::varchar IS NOT NULL THEN $1 ELSE title END,
+      description = CASE WHEN $2::text IS NOT NULL THEN $2 ELSE description END,
+      location = CASE WHEN $3::varchar IS NOT NULL THEN $3 ELSE location END,
+      stipend_or_ctc = CASE WHEN $4::varchar IS NOT NULL THEN $4 ELSE stipend_or_ctc END,
+      job_type = CASE WHEN $5::varchar IS NOT NULL THEN $5 ELSE job_type END,
+      minimum_cgpa = CASE WHEN $6::float8 IS NOT NULL THEN $6 ELSE minimum_cgpa END,
+      skills_required = CASE WHEN $7::text IS NOT NULL THEN $7 ELSE skills_required END,
+      application_deadline = CASE WHEN $8::timestamp IS NOT NULL THEN $8 ELSE application_deadline END,
+      is_active = false,
+      status = 'PENDING'
+    WHERE id = $9 AND recruiter_id = $10
+    RETURNING *;
+  `;
 
-  const updated = await pool.query(
-    `UPDATE jobs
-     SET title=COALESCE($1, title), 
-         description=COALESCE($2, description), 
-         location=COALESCE($3, location), 
-         stipend_or_ctc=COALESCE($4, stipend_or_ctc), 
-         job_type=COALESCE($5, job_type),
-         is_active = false,      -- Reset approval status
-         status = 'PENDING'      -- Mark as pending for Admin 
-     WHERE id=$6
-     RETURNING *`,
-    [title, description, location, stipend_or_ctc, job_type, jobId],
-  );
+  // Use undefined checks to pass NULL to the query for fields not being changed
+  const values = [
+    title || null, 
+    description || null, 
+    location || null, 
+    stipend_or_ctc || null, 
+    job_type || null,
+    numericCGPA, // already handles null/undefined
+    skills_required || null,
+    formattedDeadline,
+    jobId,
+    userId
+  ];
+
+  const result = await pool.query(query, values);
 
   return res.json(
-    new ApiResponse(
-      200,
-      updated.rows[0],
-      "Job updated. Waiting for admin re-approval.",
-    ),
+    new ApiResponse(200, result.rows[0], "Update successful. Awaiting Admin review.")
   );
 });
 
