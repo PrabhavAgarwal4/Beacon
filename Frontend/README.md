@@ -72,14 +72,6 @@ src/
 └── App.jsx           # Main routing logic and theme configuration
 ```
 
-## Environment Variables
-
-Create a `.env` file in the root directory to connect to the backend:
-```env
-VITE_API_BASE_URL=http://localhost:3000/api/v1
-NODE_ENV=development
-```
-
 ## Installation
 
 1. Clone the repository
