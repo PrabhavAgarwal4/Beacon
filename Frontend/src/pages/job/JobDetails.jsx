@@ -19,9 +19,9 @@ const JobDetails = () => {
       setLoading(true);
       try {
         // Fetch Job details
-        const jobRes = await getJobById({ jobId });
+       
+        const jobRes = await getJobById(jobId);
         setJob(jobRes.data.data);
-
         // Fetch Application Status separately so it doesn't crash the job fetch
         try {
           const appRes = await getApplicationStatus({ jobId });

@@ -123,7 +123,7 @@ const updateApplicationStatus = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Only recruiters are allowed")
     }
 
-    const validStatus = ["SHORTLISTED", "REJECTED"];
+    const validStatus = ["SHORTLISTED", "REJECTED","INTERVIEWING","ACCEPTED"];
     if (!validStatus.includes(status)) {
        throw new ApiError(400, "Invalid status");
     }
